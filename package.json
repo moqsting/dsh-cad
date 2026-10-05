@@ -8,7 +8,7 @@
   "homepage": "https://lau-mars.github.io/dsh-cad/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LAU-MARS/dsh-cad.git"
+    "url": "git+https://github.com/moqsting/dsh-cad.git"
   },
   "bugs": {
     "url": "https://github.com/LAU-MARS/dsh-cad/issues"
