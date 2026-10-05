@@ -131,7 +131,6 @@ patch 内容以包根目录的 `cordis.patch.yml` 随包分发，安装器经同
 | `cad_fusion` | 在外部 Fusion 360 执行器上运行 op 程序（GUI 桥；可选导出） |
 | `cad_onshape` | 在 Onshape 云端运行 op 程序（签名 REST API）：新建或驱动文档、返回文档链接；`readback: "step"` 回传精确 BRep 网格；导出 `.stl` / `.step` / `.x_t`（Parasolid） |
 | `cad_image_profile` | PNG → 轮廓 → 可直接拉伸的多边形点集 |
-| `cad_script` | 确定性脚本求值（轮廓点列/圆弧坐标等几何计算）：`js` 在进程内 Node vm 运行（无需 shell——宿主 shell 不可用时仍可用），`py` 走系统 Python |
 
 每步建模后：对话中的结果行原地更新（稳定 viewId + 版本化 URL），
 右侧 "零件" 页签实时跟踪最新模型。

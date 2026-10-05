@@ -137,7 +137,6 @@ Set `DEEPSEEK_API_KEY` and you are ready — for example:
 | `cad_fusion` | Run an op program on an external Fusion 360 executor (GUI bridge; optional export) |
 | `cad_onshape` | Run an op program on the Onshape cloud (signed REST API): creates or drives a document, returns its URL; `readback: "step"` for exact BRep meshes; exports `.stl` / `.step` / `.x_t` (Parasolid) |
 | `cad_image_profile` | PNG → contours → extrusion-ready polygon points |
-| `cad_script` | Deterministic script evaluation for geometry math (profile point arrays, arc coordinates): `js` runs in-process (Node vm — works even when the host shell is unavailable), `py` uses a system Python |
 
 After every modeling step: **the chat result row updates in place** (stable viewId +
 versioned URL), and the resident panel's "Part" tab tracks the latest model in real time.

@@ -20,7 +20,6 @@ import { createFreeCadTool } from './tools/cad-freecad.js'
 import { createFusionTool } from './tools/cad-fusion.js'
 import { createOnshapeTool } from './tools/cad-onshape.js'
 import { createCadImageTool } from './tools/cad-image.js'
-import { createCadScriptTool } from './tools/cad-script.js'
 
 export const name = 'dsh-cad'
 
@@ -102,7 +101,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   const cadFusion = createFusionTool({ store: binStore, workspaceRoot, ensureSceneRoute })
   const cadOnshape = createOnshapeTool({ store: binStore, workspaceRoot, ensureSceneRoute })
   const cadImage = createCadImageTool({ store, workspaceRoot, ensureSceneRoute })
-  const cadScript = createCadScriptTool({ workspaceRoot })
 
   const disposers = [
     ctx.tools.register(cadView),
@@ -112,7 +110,6 @@ export function apply(ctx: Context, config: Config = {}): void {
     ctx.tools.register(cadFusion),
     ctx.tools.register(cadOnshape),
     ctx.tools.register(cadImage),
-    ctx.tools.register(cadScript),
   ]
 
   ctx.effect(() => {
