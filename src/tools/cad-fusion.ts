@@ -104,7 +104,7 @@ export function createFusionTool(deps: FusionToolDeps): ToolDefinition {
 
       const program: Parameters<typeof FUSION360_EXECUTOR.run>[0] = { ops: steps, names, display: true }
       if (args.exportPath !== undefined) {
-        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot)
+        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot, { forWrite: true })
         const extension = resolved.toLowerCase().split('.').pop() ?? ''
         if (extension !== 'step' && extension !== 'stp' && extension !== 'stl') {
           throw new Error(`exportPath must be .step or .stl (got .${extension})`)

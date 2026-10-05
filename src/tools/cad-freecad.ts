@@ -123,7 +123,7 @@ export function createFreeCadTool(deps: FreeCadToolDeps): ToolDefinition {
         program.input = { format: extension as 'step' | 'stp' | 'brep' | 'stl', path: resolved, bodyId: 'input' }
       }
       if (args.exportPath !== undefined) {
-        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot)
+        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot, { forWrite: true })
         const extension = resolved.toLowerCase().split('.').pop() ?? ''
         if (!EXPORT_EXTENSIONS.has(extension)) throw new Error(`exportPath must be .step or .stl (got .${extension})`)
         program.export = { format: extension as 'step' | 'stp' | 'stl', path: resolved }

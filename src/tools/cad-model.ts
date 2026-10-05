@@ -1251,7 +1251,7 @@ export function createModelTools(deps: ModelToolDeps): ToolDefinition[] {
     isConcurrencySafe: () => true,
     async execute(args, exec: unknown) {
       await resolveDoc(exec)
-      const resolved = resolveWorkspacePath(args.path, deps.workspaceRoot)
+      const resolved = resolveWorkspacePath(args.path, deps.workspaceRoot, { forWrite: true })
       const lower = args.path.toLowerCase()
 
       // Assembly export: compound of transformed instances via the worker.

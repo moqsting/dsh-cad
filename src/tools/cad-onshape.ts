@@ -131,7 +131,7 @@ export function createOnshapeTool(deps: OnshapeToolDeps): ToolDefinition {
           : {}),
       }
       if (args.exportPath !== undefined) {
-        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot)
+        const resolved = resolveWorkspacePath(args.exportPath, deps.workspaceRoot, { forWrite: true })
         const extension = resolved.toLowerCase().split('.').pop() ?? ''
         if (!EXPORT_EXTENSIONS.has(extension)) {
           throw new Error(`exportPath must be one of ${[...EXPORT_EXTENSIONS].map((ext) => `.${ext}`).join(' ')} (got .${extension})`)
