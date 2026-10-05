@@ -18,6 +18,28 @@ import { assemblyTreePayload } from './modeling/assembly.js'
 import { featureTreePayload } from './modeling/feature-tree.js'
 import { convert } from './convert/index.js'
 
+/**
+ * Cross-site request guard: rejects browser requests whose `Origin` differs
+ * from `Host`. Same-origin/same-site navigations and non-browser clients
+ * (no Origin header) pass. Returns true when safe to serve.
+ */
+export function sameOriginGuard(req: IncomingMessage): boolean {
+  const origin = String(req.headers.origin ?? '')
+  const host = String(req.headers.host ?? '')
+  const site = String(req.headers['sec-fetch-site'] ?? '')
+  if (site === 'none' || site === 'same-origin' || site === 'same-site') return true
+  if (origin === '') return true
+  try { return new URL(origin).host === host } catch { return false }
+}
+
+/** Write a 403 for cross-origin requests; returns whether one was rejected. */
+function rejectCrossOrigin(req: IncomingMessage, res: ServerResponse): boolean {
+  if (sameOriginGuard(req)) return false
+  res.writeHead(403, { 'content-type': 'application/json' })
+  res.end(JSON.stringify({ error: 'forbidden: cross-origin request' }))
+  return true
+}
+
 export const SCENE_ROUTE_PATH = '/dsh-cad/scene'
 export const BIN_ROUTE_PATH = '/dsh-cad/bin'
 export const DEMO_SCENE_ROUTE_PATH = '/dsh-cad/demo-scene'
@@ -36,6 +58,7 @@ export function registerSceneRoute(server: { register: (route: SceneRoute) => ()
     kind: 'prefix',
     path: SCENE_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const segments = url.pathname.split('/').filter((segment) => segment !== '')
       // ['/dsh-cad', 'scene', '<viewId>'] → viewId is the 3rd segment.
@@ -81,6 +104,7 @@ export function registerBinRoute(server: { register: (route: SceneRoute) => () =
     kind: 'prefix',
     path: BIN_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const segments = url.pathname.split('/').filter((segment) => segment !== '')
       // ['/dsh-cad', 'bin', '<viewId>'] → viewId is the 3rd segment.
@@ -137,6 +161,7 @@ export function registerDemoRoute(server: { register: (route: SceneRoute) => () 
     kind: 'exact',
     path: DEMO_SCENE_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const part = url.searchParams.get('part') ?? 'bracket'
       if (req.method !== 'GET' || !(DEMO_PARTS as readonly string[]).includes(part)) {
@@ -176,6 +201,7 @@ export function registerDocsRoute(
     kind: 'exact',
     path: DOCS_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       if (req.method !== 'GET') {
         res.writeHead(404, { 'content-type': 'application/json' })
         res.end(JSON.stringify({ error: 'not found' }))
@@ -236,6 +262,7 @@ export function registerDocsDeleteRoute(
     kind: 'exact',
     path: DOCS_DELETE_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const id = url.searchParams.get('id')
       if (req.method !== 'POST' || id === null || id === '') {
@@ -274,6 +301,7 @@ export function registerAssemblyRoute(
     kind: 'prefix',
     path: ASSEMBLY_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const segments = url.pathname.split('/').filter((segment) => segment !== '')
       // ['/dsh-cad', 'asm', '<docId>'] → docId is the 3rd segment.
@@ -325,6 +353,7 @@ export function registerFeatureTreeRoute(
     kind: 'prefix',
     path: FEATURE_TREE_ROUTE_PATH,
     handler: async (req: IncomingMessage, res: ServerResponse) => {
+      if (rejectCrossOrigin(req, res)) return
       const url = new URL(req.url ?? '/', 'http://localhost')
       const segments = url.pathname.split('/').filter((segment) => segment !== '')
       // ['/dsh-cad', 'tree', '<docId>'] → docId is the 3rd segment.

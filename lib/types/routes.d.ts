@@ -2,6 +2,12 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { SceneStore } from './store.js';
 import type { BinarySceneStore } from './modeling/bin-store.js';
 import type { DocumentRegistry } from './modeling/registry.js';
+/**
+ * Cross-site request guard: rejects browser requests whose `Origin` differs
+ * from `Host`. Same-origin/same-site navigations and non-browser clients
+ * (no Origin header) pass. Returns true when safe to serve.
+ */
+export declare function sameOriginGuard(req: IncomingMessage): boolean;
 export declare const SCENE_ROUTE_PATH = "/dsh-cad/scene";
 export declare const BIN_ROUTE_PATH = "/dsh-cad/bin";
 export declare const DEMO_SCENE_ROUTE_PATH = "/dsh-cad/demo-scene";
