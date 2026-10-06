@@ -23,7 +23,9 @@ function inside(base: string, target: string): boolean {
 /** Resolve a model-supplied path against the workspace root.
  *
  * 读路径（默认）维持原语义：绝对路径直接返回，相对路径拼到工作区根。
- * 写路径（`forWrite: true`）额外做包含校验：越界（含符号链接逃逸）即抛错。
+ * 写路径（`forWrite: true`）额外做包含校验：越界（含链接逃逸）即抛错。
+ * 用 realpathSync.native——普通 realpathSync 在 Windows 上不解析 junction
+ * （实测返回 junction 自身路径），而 junction 是 Windows 上不需管理员即可创建的逃逸路径。
  */
 export function resolveWorkspacePath(input: string, workspaceRoot: string, opts: { forWrite?: boolean } = {}): string {
   const base = resolve(workspaceRoot)
@@ -32,13 +34,13 @@ export function resolveWorkspacePath(input: string, workspaceRoot: string, opts:
   if (!inside(base, resolved)) throw new Error(`写入越界：${resolved} 不在工作区 ${base} 内`)
   let rb = base
   let rt = resolved
-  try { rb = realpathSync(base) } catch { /* 工作区根尚未创建时退回词法结果 */ }
+  try { rb = realpathSync.native(base) } catch { /* 工作区根尚未创建时退回词法结果 */ }
   try {
-    rt = realpathSync(resolved)
+    rt = realpathSync.native(resolved)
   } catch {
-    try { rt = realpathSync(dirname(resolved)) } catch { rt = resolved }
+    try { rt = realpathSync.native(dirname(resolved)) } catch { rt = resolved }
   }
-  if (!inside(rb, rt)) throw new Error(`写入越界：${resolved} 经符号链接指向工作区外`)
+  if (!inside(rb, rt)) throw new Error(`写入越界：${resolved} 经链接指向工作区外（realpath ${rt}）`)
   return resolved
 }
 

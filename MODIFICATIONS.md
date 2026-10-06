@@ -9,7 +9,7 @@
 | # | 文件 | 修改 | 原因 | 对应审查结论 |
 |---|---|---|---|---|
 | 1 | `src/index.ts`；删除 `src/tools/cad-script.ts`、`lib/tools/cad-script.js`、`lib/types/tools/cad-script.d.ts`、`test/cad-script.test.ts` | 删除 `cad_script` 工具的 import、实例化与注册；删除其源码、编译产物与测试 | `cad_script` 的 js 路径为 Node vm 逃逸面（C1）、py 路径为无沙箱任意执行（C2），无法在保留语义下安全重写，已拍板移除 | C1、C2 |
-| 2 | `src/tools/util.ts` | 重写 `resolveWorkspacePath`：新增 `{ forWrite: true }`，写路径做词法 + realpath 双包含校验、越界抛错；读路径维持原语义 | 审计 C3：写路径无包含性检查，可越界写（含 DSH 凭据可达） | C3 |
+| 2 | `src/tools/util.ts` | 重写 `resolveWorkspacePath`：新增 `{ forWrite: true }`，写路径做词法 + **`realpathSync.native`** 链接纵深校验、越界抛错；读路径维持原语义。用 `.native` 的原因：普通 `realpathSync` 在 Windows 上不解析 junction（实测返回 junction 自身路径），而 junction 是不需管理员即可创建的逃逸路径 | 审计 C3：写路径无包含性检查，可越界写（含 DSH 凭据可达） | C3 |
 | 3 | `src/tools/cad-model.ts`、`cad-freecad.ts`、`cad-fusion.ts`、`cad-onshape.ts` | 导出/写路径调用点传 `{ forWrite: true }` | 与 #2 联动 | C3 |
 | 4 | `src/routes.ts` | 新增 `sameOriginGuard(req)`，应用到全部 7 条路由（GET 读 + POST 删除），跨源不通过即 403 | 审计 C4：无鉴权路由，可跨站读场景/装配树/删除文档 | C4 |
 | 5 | `test/security.test.ts`（新增） | 为 #2、#4 补回归（写越界 + 同源守卫） | 约束#4：重写后必须跑测试 | C3、C4 |

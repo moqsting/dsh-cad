@@ -3,9 +3,11 @@
  * - resolveWorkspacePath `forWrite` confinement (审计 C3: 任意路径越界写)
  * - sameOriginGuard (审计 C4: 无鉴权路由跨站访问)
  */
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { IncomingMessage } from 'node:http'
-import { resolve } from 'node:path'
+import { mkdirSync, rmSync, symlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { resolveWorkspacePath } from '../src/tools/util.js'
 import { sameOriginGuard } from '../src/routes.js'
 
@@ -34,6 +36,36 @@ describe('resolveWorkspacePath write confinement (C3)', () => {
 
   it('写路径经 .. 越界抛错', () => {
     expect(() => resolveWorkspacePath('../evil.step', ws, { forWrite: true })).toThrow(/写入越界/)
+  })
+})
+
+describe('resolveWorkspacePath 链接逃逸（realpath 纵深，需真实目录）', () => {
+  const base = join(tmpdir(), `dsh-cad-link-${process.pid}`)
+  const ws = join(base, 'ws')
+  const outside = join(base, 'outside')
+
+  beforeAll(() => {
+    rmSync(base, { recursive: true, force: true })
+    mkdirSync(ws, { recursive: true })
+    mkdirSync(outside, { recursive: true })
+  })
+
+  afterAll(() => {
+    rmSync(base, { recursive: true, force: true })
+  })
+
+  it('工作区内正常写路径放行', () => {
+    expect(resolveWorkspacePath('ok/part.step', ws, { forWrite: true })).toBe(join(ws, 'ok', 'part.step'))
+  })
+
+  it('中间目录为链接时写路径越界抛错（必须 realpathSync.native 才拦得住 junction）', () => {
+    const link = join(ws, 'escape')
+    try {
+      symlinkSync(outside, link, process.platform === 'win32' ? 'junction' : 'dir')
+    } catch {
+      return // 平台不支持创建链接时跳过该断言
+    }
+    expect(() => resolveWorkspacePath('escape/pwn.step', ws, { forWrite: true })).toThrow(/写入越界/)
   })
 })
 
